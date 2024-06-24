@@ -1,9 +1,10 @@
 import { useState, useEffect } from "react";
+import { Link } from "react-router-dom";
 import axios from "axios";
 const apiUrl = import.meta.env.VITE_BASE_API_URL;
-import "/src/app.css";
+import "/src/App.css";
 
-export default function App() {
+export default function PostList() {
   const defaultFormData = {
     title: "",
     content: "",
@@ -42,10 +43,10 @@ export default function App() {
     }
   };
 
-  const fetchPosts = async ()=> {
+  const fetchPosts = async (page = 1) => {
+    // Aggiunto parametro page
     try {
-      const { data } = await axios.get(`${apiUrl}/posts`);
-      console.log("Fetched posts:", data);
+      const { data } = await axios.get(`${apiUrl}/posts?page=${page}`); // Modificata la richiesta API
       setPosts(data.data);
       setCurrentPage(data.page);
       setTotalPages(data.totalPages);
@@ -80,13 +81,11 @@ export default function App() {
     fetchPosts(currentPage);
   };
 
-
   const removePost = async (id) => {
     try {
       await axios.delete(`${apiUrl}/posts/${id}`);
       setPosts((postsArray) => {
         return postsArray.filter((post) => post.id !== id);
-
       });
     } catch (error) {
       console.error("Error deleting post:", error);
@@ -108,7 +107,7 @@ export default function App() {
 
   const goToNextPage = () => {
     if (currentPage < totalPages) {
-      fetchPosts(currentPage + parseInt(1));
+      fetchPosts(currentPage + 1);
     }
   };
 
@@ -206,7 +205,9 @@ export default function App() {
                 {posts.map((post, index) => (
                   <article key={`post${index}`} className="title-item">
                     <span>Titolo:</span>
-                    <h2>{post.title}</h2>
+                    <h2>
+                      <Link to={`/posts/${post.id}`}>{post.title}</Link>
+                    </h2>
                     <span>Contenuto:</span>
                     <p>{post.content}</p>
                     <span>Tags:</span>
@@ -235,11 +236,21 @@ export default function App() {
                 ))}
               </section>
               <div className="pagination">
-                <button onClick={() => goToPreviousPage(currentPage => currentPage - 1)} disabled={currentPage === 1}>
+                <button
+                  onClick={() =>
+                    goToPreviousPage((currentPage) => currentPage - 1)
+                  }
+                  disabled={currentPage === 1}
+                >
                   Precedente
                 </button>
-                <span>Pagina {currentPage} di {totalPages}</span>
-                <button onClick={() => goToNextPage(currentPage => currentPage + 1)} disabled={currentPage === totalPages}>
+                <span>
+                  Pagina {currentPage} di {totalPages}
+                </span>
+                <button
+                  onClick={() => goToNextPage((currentPage) => currentPage + 1)}
+                  disabled={currentPage === totalPages}
+                >
                   Prossima
                 </button>
               </div>
